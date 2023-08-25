@@ -66,7 +66,7 @@ def insert_data(conn, title, url, text):
 
     if existing_url is None:
         if len(text) > 20 and len(title) > 5:  # text가 20자 이상인 경우에만 데이터 삽입
-            insert_query = "INSERT INTO news (title, url, text) VALUES (?, ?);"
+            insert_query = "INSERT INTO news (title, url, text) VALUES (?, ?, ?);"
             cursor.execute(insert_query, (title, url, text))
             conn.commit()
 
@@ -83,7 +83,7 @@ def insert_data(conn, title, url, text):
             producer.send(TOPIC_NAME, row_json)
             producer.flush()
             # print(row_data)
-            return # 테스팅 일단 한개만 flush
+            # return # 테스팅 일단 한개만 flush
             
         else:
             print(f"Text for URL '{url}' is too short (<= 20 characters). Skipping insertion.")
