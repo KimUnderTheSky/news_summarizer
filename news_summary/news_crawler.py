@@ -28,12 +28,17 @@ def crawl_news():
     content_divs = main_soup.find_all('div', class_='textDiv')
 
     # 각 뉴스 기사 링크 가져오기
+    # 각 뉴스 기사 제목 가져오기
     link_list = []
+    title_list = []
     for content_div in content_divs:
         a_tags = content_div.find_all('a', class_='title', recursive=False)
         for a_tag in a_tags:
             url = base_url + a_tag['href']
+            title = a_tag['title']
             link_list.append(url)
+            title_list.append(title)
+            
     
     # 각 뉴스 기사마다 텍스트 가져오기
     news_texts = []    
@@ -48,10 +53,10 @@ def crawl_news():
         # 리스트의 요소들을 하나의 문장으로 합치기
         combined_sentence = ' '.join(p_texts)   
         news_texts.append(combined_sentence)
-    return link_list, news_texts
+    return title_list, link_list, news_texts
 
 # DB에 넣는 쿼리
-def insert_data(conn, url, text):
+def insert_data(conn, title, url, text):
     cursor = conn.cursor()
     
     # 해당 URL이 이미 데이터베이스에 존재하는지 확인
@@ -60,13 +65,14 @@ def insert_data(conn, url, text):
     existing_url = cursor.fetchone()
 
     if existing_url is None:
-        if len(text) > 20:  # text가 20자 이상인 경우에만 데이터 삽입
-            insert_query = "INSERT INTO news (url, text) VALUES (?, ?);"
-            cursor.execute(insert_query, (url, text))
+        if len(text) > 20 and len(title) > 5:  # text가 20자 이상인 경우에만 데이터 삽입
+            insert_query = "INSERT INTO news (title, url, text) VALUES (?, ?);"
+            cursor.execute(insert_query, (title, url, text))
             conn.commit()
 
             # # Kafka로 데이터 전송
             row_data = {
+                "TITLE": title,
                 "URL": url,
                 "TEXT": text
             }
@@ -77,7 +83,7 @@ def insert_data(conn, url, text):
             producer.send(TOPIC_NAME, row_json)
             producer.flush()
             # print(row_data)
-
+            return # 테스팅 일단 한개만 flush
             
         else:
             print(f"Text for URL '{url}' is too short (<= 20 characters). Skipping insertion.")
@@ -85,16 +91,16 @@ def insert_data(conn, url, text):
         print(f"URL '{url}' already exists in the database. Skipping insertion.")
 
 # 크롤링 된 데이터 DB에 저장 
-def db_save(conn, link_list, news_texts):
+def db_save(conn, title_list, link_list, news_texts):
     # 데이터 저장
-    for url, text in zip(link_list, news_texts):
-        insert_data(conn, url, text)
+    for title, url, text in zip(title_list, link_list, news_texts):
+        insert_data(conn, title, url, text)
 
 # 크롤링, DB적재
 def crawl_and_insert():
     conn = sqlite3.connect(db_path)
-    link_list, news_texts = crawl_news()
-    db_save(conn, link_list, news_texts)
+    title_list, link_list, news_texts = crawl_news()
+    db_save(conn, title_list, link_list, news_texts)
     conn.close()
 
 # crawl_and_insert()

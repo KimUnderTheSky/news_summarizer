@@ -4,7 +4,7 @@ import os
 # SQLite 데이터베이스 연결 및 테이블 생성
 def setup_database():
     # 데이터베이스 파일 경로
-    db_directory = "news_summary"
+    db_directory = "/home/ubuntu/working/kafka-examples/news_summary"
     db_file = "news_database.db"
     db_path = os.path.join(db_directory, db_file)
 
@@ -13,6 +13,7 @@ def setup_database():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS news (
             id INTEGER PRIMARY KEY,
+            title TEXT,
             url TEXT,
             text TEXT
         )
