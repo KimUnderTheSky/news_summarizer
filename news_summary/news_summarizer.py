@@ -62,9 +62,13 @@ if __name__ == "__main__":
             model="gpt-3.5-turbo",
             messages=BASE_PROMPT_TC)
         
+        if len(BASE_PROMPT_TC) > 3:
+            BASE_PROMPT_TC.pop()
+            BASE_PROMPT_TC.pop()
+
         title = msg["TITLE"]
         url = msg["URL"]
         info = [completion.choices[0].message.content]
-        msg = f"[기사제목] : {title}\\n[기사요약] : {info}\\n[기사링크]: {url}"
+        msg = f"[기사제목] : {title}\n[기사요약] : {info}\n[기사링크]: {url}"
         print(msg)
         send_slack(msg)

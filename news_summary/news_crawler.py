@@ -54,7 +54,8 @@ def crawl_news():
         combined_sentence = ' '.join(p_texts)   
         news_texts.append(combined_sentence)
     return title_list, link_list, news_texts
-
+# set을 
+# def
 # DB에 넣는 쿼리
 def insert_data(conn, title, url, text):
     cursor = conn.cursor()
