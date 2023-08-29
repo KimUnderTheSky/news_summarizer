@@ -23,7 +23,7 @@ def send_slack(msg):
 # msg.text로 gpt로 답변 받아오기
 # 뉴스 기사에서 전문 용어를 설명해주는 것.
 BASE_PROMPT_TC = [
-        {"role": "system", "content": "이 시스템은 일반인들을 대상으로 금융, 경제 뉴스 기사를 해설하여 보여주는 시스템이다."},
+        {"role": "system", "content": "이 시스템은 일반인들을 대상으로 금융, 경제 뉴스 기사를 한글로 해설하여 보여주는 시스템이다."},
         {"role": "user", "content": """
 Korea's current account surplus continued for the 19th consecutive month in November, reaching a surplus of $716 million. The Bank of Korea announced on the 11th that according to the preliminary data for the "International Balance of Payments for November 2021," the current account surplus for November last year was $716 million. This marks the 19th month of continuous surplus since May of the previous year.
 
@@ -59,21 +59,30 @@ if __name__ == "__main__":
     producer = KafkaProducer(bootstrap_servers=BROKERS)
 
     for message in consumer:
-        # loads: 문자열 형태의 json 데이터를 딕셔너리 형태로 변환
-        msg = json.loads(message.value.decode()) 
+        try:
+            # loads: 문자열 형태의 json 데이터를 딕셔너리 형태로 변환
+            msg = json.loads(message.value.decode()) 
 
 
-        text = msg["TEXT"]
-        BASE_PROMPT_TC.append({"role": "user", "content": text})
-        completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=BASE_PROMPT_TC)
+            text = msg["TEXT"]
+            current_messages = BASE_PROMPT_TC + [{"role": "user", "content": text}]
 
-        BASE_PROMPT_TC.pop()
-        print("token구조: \n",BASE_PROMPT_TC)
-        title = msg["TITLE"]
-        url = msg["URL"]
-        info = [completion.choices[0].message.content]
-        msg = f"[기사제목] : {title} \n[기사요약] : {info} \n[기사링크]: {url}"
-        # print(msg)
-        send_slack(msg)
+            # BASE_PROMPT_TC.append({"role": "user", "content": text})
+
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=current_messages,
+                max_tokens=4096
+                )
+
+            # BASE_PROMPT_TC.pop()
+            print("token구조: \n",BASE_PROMPT_TC)
+            title = msg["TITLE"]
+            url = msg["URL"]
+            info = [completion.choices[0].message.content]
+            msg = f"[기사제목] : {title} \n[기사요약] : {info} \n[기사링크]: {url}"
+            # print(msg)
+            send_slack(msg)
+        except openai.error.InvalidRequestError as e:
+            print("에러 발생:", e)
+            continue
