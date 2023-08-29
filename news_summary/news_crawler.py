@@ -14,7 +14,7 @@ db_directory = "/home/ubuntu/working/kafka-examples/news_summary"
 db_file = "news_database.db"
 db_path = os.path.join(db_directory, db_file)
 
-
+url_set = set()
 
 # 크롤링할 웹페이지의 URL 설정
 news_url = 'https://kr.investing.com/news/latest-news'
@@ -54,8 +54,45 @@ def crawl_news():
         combined_sentence = ' '.join(p_texts)   
         news_texts.append(combined_sentence)
     return title_list, link_list, news_texts
-# set을 
-# def
+
+
+# link를 비교 후 set에 집어 넣는 함수 
+def send_url(title, url, text):
+
+    if url not in url_set:
+        if len(text) > 20 and len(title) > 5:  # text가 20자 이상인 경우에만 데이터 삽입
+            url_set.add(url)
+
+            # Kafka로 데이터 전송
+            row_data = {
+                "TITLE": title,
+                "URL": url,
+                "TEXT": text
+            }
+            # dumps -> 딕셔너리를 Json 형식의 바이너리화 된 문자열로 바꿔준다.
+            row_json = json.dumps(row_data).encode("utf-8")
+
+            # 데이터 스트리밍
+            producer.send(TOPIC_NAME, row_json)
+            producer.flush()
+            
+        else:
+            print(f"Text for URL '{url}' is too short (<= 20 characters). Skipping insertion.")
+    else:
+        print(f"URL '{url}' already exists. Skipping insertion.")
+
+# 값 하나씩 consumer로 보내는 함수
+def send_consumer(title_list, link_list, news_texts):
+    # 데이터 저장
+    for title, url, text in zip(title_list, link_list, news_texts):
+        send_url(title, url, text)
+
+# 크롤링 후 카프카 스트리밍
+def crawl_and_send():
+    title_list, link_list, news_texts = crawl_news()
+    send_consumer(title_list, link_list, news_texts)
+
+
 # DB에 넣는 쿼리
 def insert_data(conn, title, url, text):
     cursor = conn.cursor()
@@ -109,7 +146,7 @@ def crawl_and_insert():
 scheduler = BlockingScheduler()
 
 # 매 시간마다 crawl_and_insert 함수 실행
-scheduler.add_job(crawl_and_insert, 'interval', minutes=1)
+scheduler.add_job(crawl_and_send, 'interval', minutes=1)
 if __name__ == "__main__":
 
     producer = KafkaProducer(bootstrap_servers=BROKERS)
