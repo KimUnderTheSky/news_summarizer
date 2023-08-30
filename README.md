@@ -23,4 +23,4 @@ gpt 기반 해외 뉴스 해설 및 요약 알리미
 2. kafka streaming(kafka producer, kafka consumer)
 2. chat gpt 기반으로 뉴스 요약 정보 생성(openai)
 3. 슬랙, kakao talk 전송(request, webhook)
-![image](https://github.com/KimUnderTheSky/news_summarizer/assets/96776691/822f9693-9917-44a6-b02d-4d57eb55a69d)
+![image](https://github.com/KimUnderTheSky/news_summarizer/assets/96776691/da40c79a-f407-45c7-8b5e-821ee216ef0b)
