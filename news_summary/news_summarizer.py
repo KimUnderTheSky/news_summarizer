@@ -23,7 +23,7 @@ def send_slack(msg):
 # msg.text로 gpt로 답변 받아오기
 # 뉴스 기사에서 전문 용어를 설명해주는 것.
 BASE_PROMPT_TC = [
-        {"role": "system", "content": "이 시스템은 일반인들을 대상으로 금융, 경제 뉴스 기사를 한글로 해설하여 보여주는 시스템이다."},
+        {"role": "system", "content": "이 시스템은 일반인들을 대상으로 뉴스 사건이 경제 및 금융시장에 미칠 영향을 한글로 해설하여 보여주는 시스템이다."},
         {"role": "user", "content": """
 Korea's current account surplus continued for the 19th consecutive month in November, reaching a surplus of $716 million. The Bank of Korea announced on the 11th that according to the preliminary data for the "International Balance of Payments for November 2021," the current account surplus for November last year was $716 million. This marks the 19th month of continuous surplus since May of the previous year.
 
@@ -40,14 +40,21 @@ Lee Sung-ho, the director of the Bank of Korea's Financial Statistics Department
 Please note that this translation is provided for informational purposes and may require further review by a professional translator for official or critical use.
         """},
         {"role": "assistant", "content": """
-경상 수지가 19개월 연속 흑자행진이다. 부문별로 살펴보면 상품수지는 흑자이지만 작년대비 흑자 규모가 줄었다. 수출은 호조였으나 원자재 가격이 오르면서 수입비용이 증가했기 때문이다. 
-서비스 수지는 적자였지만 작년대비 적자 규모가 줄었다. 세계적인 공급망 차질로 우리나라 해운과 항송 운송 수입이 늘었기 때문이다. (해운과 항송은 운송으로 서비스 수지에 해당)
-소득수지는 흑자이고 작년대비 흑자규모도 늘었다. 내국인의 해외 투자등이 증가하며 배당소득수지가 늘었기 때문이다.
-무역수지는 적자이다. 이 역시 원자재 가격이 많이 상승했기 때문이다. 대한민국은 제조업 기반의 국가이기 때문에 전체 경상수지 흑자 규모 71억 6천만 달러 대비 상품수지 흑자 규모가 59억 5천만 달러이다. 그만큼 한국이 제조업에 많은 의존을 하고 있다는 것을 알 수 있다. 근데 최근에 한류 열풍이 전세계에 불고 있는데 서비스 수지에 어느정도 영향을 미치고 있는지 궁금했다. 찾아보니까 문화예술저작권 무역수지가 2020년에 사상 첫 흑자를 기록했다고 한다. 그리고 세계적인 공급망 차질로 우리나라의 해운, 항송 운송 수입이 늘어났다는 점은 흥미로웠다. 공급망 차질로 인해 운송업계에서 수요가 더 생겼고 수요는 수입으로 이어졌다.
-미국이 금리를 계속 인상하는 정책을 펼치다. 점차 달러의 가치가 높아져서 한국의 상품 가격경쟁력이 높아지고, 미국에 수출이 늘어나고, 대미무역수지 흑자규모가 더 커질 수 있음을 예상해볼 수 있다.
-        """}
-]
 
+For 19 consecutive months, South Korea has maintained a surplus streak. Looking at the different sectors, the goods trade balance remains in surplus, although the surplus has decreased compared to the previous year. While exports have been strong, the increase in raw material prices has led to higher import costs.
+
+The services trade balance was in deficit, but the deficit has reduced compared to the previous year. This is attributed to an increase in imports of maritime and shipping services due to global supply chain disruptions.
+
+The income balance is in surplus, and the surplus has expanded compared to the previous year. This growth can be attributed to increased overseas investments by domestic residents, leading to higher dividend income.
+
+However, the overall trade balance is in deficit. This is also influenced by the significant rise in raw material prices. As South Korea relies heavily on manufacturing, the surplus in goods trade balance, which stands at $595 million against the total current account surplus of $7.16 billion, underscores the country's manufacturing dependence.
+
+Interestingly, amidst the global popularity of the Korean Wave, the trade surplus in cultural and artistic copyright exports recorded its first surplus in history in 2020. Moreover, the disruption in global supply chains led to increased imports in maritime and shipping services for South Korea, which in turn created demand and subsequently increased imports.
+
+The United States continues its policy of raising interest rates, leading to a gradual increase in the value of the dollar. This could enhance Korea's price competitiveness for goods, potentially boosting exports to the U.S. and widening the trade surplus in the U.S.-Korea trade relationship.
+        """}
+
+]
 
 
 
@@ -72,7 +79,7 @@ if __name__ == "__main__":
             completion = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=current_messages,
-                max_tokens=4096
+                max_tokens=1700
                 )
 
             # BASE_PROMPT_TC.pop()
